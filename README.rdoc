@@ -1,0 +1,74 @@
+= QualityTime
+
+QualityTime extends Ruby's standard Time and Date classes to facilitate
+safer and more deliberate manipulation of chronological and calendar
+values, especially for values that precede the introduction of the
+Gregorian calendar.
+
+== Extensions to Date and Time
+
+Date#to_local_time is a Julian-safe replacement for Date#to_time from
+the Ruby standard library. Date#to_utc_time is an equivalent method that
+returns the UTC time corresponding to the beginning of the day denoted
+by Date.
+
+Time#to_gregorian_date and Time#to_julian_date are convenience methods
+which supplement Time#to_date from the Ruby standard library. Unlike
+Time#to_date, these methods return Date objects which use a fixed
+calendar.
+
+== Why Date#to_time is unsafe for Julian values
+
+Dates constructed with a value on or before 1582-10-04 (Julian day 2299160)
+using the default calendar reform day, as well as any Date constructed
+explicitly to use the Julian calendar (Date::JULIAN), are unsafe for use
+with Date#to_time.
+
+Unlike Date objects, which can use either the Julian or Gregorian calendars,
+and are freely convertible between the two, Time objects always use the
+Gregorian calendar, or the "proleptic" Gregorian calendar as it is known
+when it is applied to values before 1582-10-15 (Julian day 2299161).
+
+Ruby standard library Date#to_time does not respect this limitation, with
+the effect that the values of Time objects instantiated from Julian calendar
+Date objects bear only a misleading relationship to the values of the Date
+objects that produce them.
+
+Such an instance of Time will appear to denote the same calendar year,
+month, and day as the Date object it was derived from, but these attributes
+belong to a different calendar than is used by the Date object they were
+derived from.
+
+As one consequence, the Time object cannot be converted back into a
+Date object equivalent to the one it was derived from:
+
+  d = Date.new(1582, 10, 4) # Julian day 229160
+  d == d.to_time.to_date    # false! (Julian day 229150)
+
+Other operations on the Time object derived in this fashion are likely
+to yield misleading results:
+
+  d = Date.new(1582, 10, 4)
+  d.to_time + (60 * 60 * 24)                # Minus 9 days: 2299151j
+  Time.now - d.to_time                      # Includes 10 day error
+  d.to_time.to_date < Date.new(1582, 9, 30) # true
+
+== Why Date#to_local_time and Date#to_utc_time are safe for all values
+
+Date#to_local_time and Date#to_utc_time preserve the relationship between
+the value of the Date object, its chronological Julian day, and the value
+of the Time object, epoch seconds and nanoseconds. By maintaining the
+relationship between these values rather than relying on their
+representations in the Julian or Gregorian calendars, the products of
+these conversions are interoperable:
+
+  d = Date.new(1582, 10, 4)
+  d == d.to_local_time.to_date                    # true
+  Time.now - d.to_local_time                      # Secs since 2299160j
+  d.to_local_time + (60 * 60 * 24)                # Plus 1 day: 2299161j
+  d.to_local_time.to_date < Date.new(1582, 9, 30) # false
+
+== Copyright
+
+Copyright (c) 2013 Riley Lynch. See LICENSE.txt for further details.
+
