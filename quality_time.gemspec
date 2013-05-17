@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "quality_time"
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Riley Lynch"]
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
     "lib/core_ext/date.rb",
     "lib/core_ext/time.rb",
     "lib/quality_time.rb",
+    "quality_time.gemspec",
     "spec/lib/core_ext/date_spec.rb",
     "spec/lib/core_ext/time_spec.rb",
     "spec/spec_helper.rb"
